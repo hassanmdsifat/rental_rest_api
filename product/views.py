@@ -1,13 +1,14 @@
 from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework import filters
-from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, UpdateAPIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_201_CREATED
+from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_201_CREATED, HTTP_500_INTERNAL_SERVER_ERROR
 
 from domain.models.product import Product
-from product.serializers import ProductSerializer, PriceSerializer, BookingSerializer, BookingDetailsSerializer
+from product.serializers import ProductSerializer, PriceSerializer, BookingSerializer, BookingDetailsSerializer,\
+    ReturnSerializer
 from packages.manager.price_manager import calculate_price
 
 
@@ -48,14 +49,40 @@ class BookProduct(CreateAPIView):
         serializer = self.get_serializer(data=request.data, context={
             'product_id': kwargs['id']
         })
-        if serializer.is_valid(raise_exception=True):
+        if serializer.is_valid():
             booking_details = serializer.save()
             booking_details_serializer = BookingDetailsSerializer(booking_details)
             return Response(
                 booking_details_serializer.data,
                 status=HTTP_201_CREATED)
         return Response(
-            {
-                'error': serializer.errors
-            },
+            serializer.errors,
             status=HTTP_400_BAD_REQUEST)
+
+
+class ReturnProduct(UpdateAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = ReturnSerializer
+
+    def get_object(self, product_id):
+        return Product.objects.prefetch_related('booking_details').get(id=product_id)
+
+    def update(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object(kwargs['id'])
+            serializer = self.get_serializer(data=request.data, context={
+                'product': instance
+            })
+            if serializer.is_valid():
+                booking_details = serializer.save()
+                booking_details_serializer = BookingDetailsSerializer(booking_details)
+                return Response(
+                    booking_details_serializer.data,
+                    status=HTTP_201_CREATED)
+            return Response(
+                serializer.errors,
+                status=HTTP_400_BAD_REQUEST)
+        except Exception as E:
+            return Response({
+                'error': str(E)
+            }, status=HTTP_500_INTERNAL_SERVER_ERROR)

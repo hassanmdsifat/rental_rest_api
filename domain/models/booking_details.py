@@ -11,7 +11,7 @@ BOOKING_STATE_CHOICES = [
 
 
 class BookingDetails(BaseModel):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='booking_details')
     estimated_price = models.DecimalField(max_digits=10, decimal_places=2)
     actual_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     rental_date = models.DateField()
