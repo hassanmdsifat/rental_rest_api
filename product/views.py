@@ -30,7 +30,7 @@ class GetProductPrice(RetrieveAPIView):
         serializer = self.get_serializer(data={'from_date': request.query_params.get('from_date', None),
                                                'to_date': request.query_params.get('to_date', None)})
         if serializer.is_valid():
-            response_dict = calculate_price(kwargs['pk'], serializer.data.get('from_date'),
+            response_dict = calculate_price(kwargs['id'], serializer.data.get('from_date'),
                                             serializer.data.get('to_date'))
             return Response(response_dict, status=HTTP_200_OK if response_dict['status'] else HTTP_400_BAD_REQUEST)
         return Response(

@@ -271,7 +271,7 @@ class ProductListTest(TestCase):
                                                                                               case['from_date'],
                                                                                               case['to_date']))
             view = GetProductPrice.as_view()
-            response = view(request, pk=case['id'])
+            response = view(request, id=case['id'])
             assert response.status_code == case['result_status']
             assert response.data['price'] == case['price']
             assert response.data['error'] == case['error']
