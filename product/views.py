@@ -1,13 +1,13 @@
 from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework import filters
-from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
+from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_201_CREATED
 
 from domain.models.product import Product
-from product.serializers import ProductSerializer, PriceSerializer
+from product.serializers import ProductSerializer, PriceSerializer, BookingSerializer, BookingDetailsSerializer
 from packages.manager.price_manager import calculate_price
 
 
@@ -38,3 +38,24 @@ class GetProductPrice(RetrieveAPIView):
                 'error': serializer.errors
             }
         )
+
+
+class BookProduct(CreateAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = BookingSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, context={
+            'product_id': kwargs['id']
+        })
+        if serializer.is_valid(raise_exception=True):
+            booking_details = serializer.save()
+            booking_details_serializer = BookingDetailsSerializer(booking_details)
+            return Response(
+                booking_details_serializer.data,
+                status=HTTP_201_CREATED)
+        return Response(
+            {
+                'error': serializer.errors
+            },
+            status=HTTP_400_BAD_REQUEST)
