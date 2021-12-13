@@ -1,5 +1,5 @@
 from pathlib import Path
-from rental_application.config.local import LOCAL_APPS
+from rental_application.config.local import LOCAL_APPS, CORS_ORIGIN_ALLOW_ALL
 from rental_application.config import local_settings
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -22,10 +22,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'django_filters'
+    'django_filters',
+    'corsheaders',
 ] + LOCAL_APPS
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -88,3 +90,4 @@ USE_L10N = True
 USE_TZ = True
 STATIC_URL = '/static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+CORS_ORIGIN_ALLOW_ALL = CORS_ORIGIN_ALLOW_ALL
