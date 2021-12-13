@@ -1,9 +1,10 @@
+from datetime import datetime, timedelta
 from django.test import TestCase
 
 from rest_framework.test import APIRequestFactory
 
 from domain.models.product import Product
-from product.views import GetAllProduct
+from product.views import GetAllProduct, GetProductPrice
 
 
 class ProductListTest(TestCase):
@@ -53,6 +54,7 @@ class ProductListTest(TestCase):
                 "needing_repair": True,
                 "durability": 0,
                 "max_durability": 2000,
+                "discount_price": 40,
                 "mileage": None,
                 "price":  200,
                 "minimum_rent_period": 2
@@ -217,10 +219,59 @@ class ProductListTest(TestCase):
         for data in all_data_set:
             Product.objects.create(**data)
         self.factory = APIRequestFactory()
-        self.view = GetAllProduct.as_view()
 
     def test_product_list(self):
         request = self.factory.get('/api/product/')
-        response = self.view(request)
+        view = GetAllProduct.as_view()
+        response = view(request)
         assert response.status_code == 200
 
+    def test_product_price(self):
+        from_date = datetime.now().date()
+        test_cases = [
+            {
+                'from_date': from_date,
+                'to_date': from_date + timedelta(days=1),
+                'id': 1,
+                'result_status': 400,
+                'price': 0,
+                'error': 'Rental Period is not minimum rent period'
+
+            },
+            {
+                'from_date': from_date,
+                'to_date': from_date + timedelta(days=2),
+                'id': 1,
+                'result_status': 200,
+                'price': 9000.00,
+                'error': ''
+
+            },
+            {
+                'from_date': from_date,
+                'to_date': from_date + timedelta(days=2),
+                'id': 4,
+                'result_status': 200,
+                'price': 400.00,
+                'error': ''
+
+            },
+            {
+                'from_date': from_date,
+                'to_date': from_date + timedelta(days=5),
+                'id': 4,
+                'result_status': 200,
+                'price': 960.00,
+                'error': ''
+
+            },
+        ]
+        for case in test_cases:
+            request = self.factory.get('/api/product/{}/price?from_date={}&to_date={}'.format(case['id'],
+                                                                                              case['from_date'],
+                                                                                              case['to_date']))
+            view = GetProductPrice.as_view()
+            response = view(request, id=case['id'])
+            assert response.status_code == case['result_status']
+            assert response.data['price'] == case['price']
+            assert response.data['error'] == case['error']
