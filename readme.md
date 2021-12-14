@@ -33,6 +33,13 @@ As I have used sqlite database, for setting up initial data, please run:
 (venv)$ python manage.py loaddata domain/meta/product_fixtures.json 
 ```
 
+Please add local_settings.py file inside, rental_application->config directory
+It needs to include
+```python
+SECRET_KEY = 'TEST'
+DEBUG = True
+```
+
 ## Test
 For unittest, please run
 ```sh
