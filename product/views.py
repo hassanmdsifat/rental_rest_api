@@ -78,7 +78,7 @@ class ReturnProduct(UpdateAPIView):
                 booking_details_serializer = BookingDetailsSerializer(booking_details)
                 return Response(
                     booking_details_serializer.data,
-                    status=HTTP_201_CREATED)
+                    status=HTTP_200_OK)
             return Response(
                 serializer.errors,
                 status=HTTP_400_BAD_REQUEST)

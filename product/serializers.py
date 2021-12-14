@@ -91,7 +91,7 @@ class ReturnSerializer(serializers.Serializer):
                 need_repair = validated_data.pop('needing_repair')
                 booking_details = current_product.booking_details.filter(booking_state=ACTIVE_STATE).order_by('-id')
                 if booking_details:
-                    booking_details_object = booking_details.fast()
+                    booking_details_object = booking_details.first()
                     booking_details_object.actual_rental_date = validated_data['actual_rental_date']
                     booking_details_object.actual_return_date = validated_data['actual_return_date']
                     booking_details_object.actual_price = validated_data['actual_price']
