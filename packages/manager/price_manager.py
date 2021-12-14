@@ -18,6 +18,8 @@ def calculate_price(product_id, from_date, to_date):
             from_date = convert_str_to_date(from_date)
         if type(to_date) == str:
             to_date = convert_str_to_date(to_date)
+        '''As mentioned, price is calculated by multiplying the product's price by the date, so taking days
+         difference between rental and return'''
         day_spent = (to_date-from_date).days
 
         if current_product.discount_price:
