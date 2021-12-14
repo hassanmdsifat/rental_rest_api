@@ -5,6 +5,7 @@ from rest_framework.test import APIRequestFactory
 
 from domain.models.product import Product
 from product.views import GetAllProduct, GetProductPrice
+from packages.manager.durability_manager import calculate_durability
 
 
 class ProductListTest(TestCase):
@@ -275,3 +276,40 @@ class ProductListTest(TestCase):
             assert response.status_code == case['result_status']
             assert response.data['price'] == case['price']
             assert response.data['error'] == case['error']
+
+    def test_product_durability(self):
+        from_date = datetime.now().date()
+        test_cases = [
+            {
+                'from_date': from_date,
+                'to_date': from_date + timedelta(days=1),
+                'type': 'plain',
+                'result': 1,
+
+            },
+            {
+                'from_date': from_date,
+                'to_date': from_date + timedelta(days=2),
+                'type': 'plain',
+                'result': 2,
+            },
+            {
+                'from_date': from_date,
+                'to_date': from_date + timedelta(days=1),
+                'type': 'meter',
+                'result': 4,
+                'mileage': 12
+
+            },
+            {
+                'from_date': from_date,
+                'to_date': from_date + timedelta(days=2),
+                'type': 'meter',
+                'result': 10,
+                'mileage': 30
+
+            },
+        ]
+        for case in test_cases:
+            result = calculate_durability(case['from_date'], case['to_date'], case['type'], case.get('mileage', 0))
+            assert result == case['result']
